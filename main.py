@@ -7,6 +7,10 @@ import sqlite3
 from datetime import datetime
 import random
 
+pd.options.mode.chained_assignment = None
+pd.set_option('display.max_rows', 500)
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 1000)
 
 mydb = sqlite3.connect("db.sql")
 mycursor = mydb.cursor()
@@ -106,7 +110,7 @@ def AddCrimeRec():
         else:
             continue
 
-    CurrentDate = str(datetime.now())[0:11]
+    CurrentDate = str(datetime.now())[0:10]
 
     while True:
         NewOffenceNo = input("ENTER OFFENCE NUMBER: ")
@@ -160,7 +164,13 @@ def ModifyCrimeRec():
 
 
 def ViewCrimeRec():
-    pass
+    print_command(5, "VIEW CRIME RECORDS")
+    query = "select * from CrimeRecords"
+    mycursor.execute(query)
+    res = mycursor.fetchall()
+    df = pd.DataFrame(res, columns=["RECORD NUMBER", "DATE", "OFFENCE NUMBER",
+                      "COMPLAINT", "ADDRESS", "PHONE NUMBER", "STATUS", "LAST UPDATED", "NOTES"])
+    print(df)
 
 
 def AddOffenceType():
@@ -182,4 +192,4 @@ def DataVisualization():
 
 if __name__ == "__main__":
     print_command(20, "CRIME RECORD MANAGEMent")
-    login()
+    ViewCrimeRec()
