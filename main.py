@@ -1,18 +1,24 @@
-from sqlite3.dbapi2 import connect
+from sqlite3.dbapi2 import Date, connect
 import pandas as pd
 import matplotlib.pyplot as plt
 import time
 import sys
 import sqlite3
+from datetime import datetime
+import random
 
 
-mysql = sqlite3.connect("db.sql")
-mycursor = mysql.cursor()
+mydb = sqlite3.connect("db.sql")
+mycursor = mydb.cursor()
+
+
+def print_command(Number, Message):
+    print("\n", "="*Number, Message.upper(), "="*Number, "\n")
 
 
 def login():
     while True:
-        print("="*10, "LOGIN", "="*10, "\n")
+        print_command(10, "LOGIN")
         query = "select username,password from users"
         mycursor.execute(query)
         res = mycursor.fetchall()
@@ -29,10 +35,10 @@ def login():
         Password = input("ENTER PASSWORD: ")
         check = [UserName, Password]
         if check in response:
-            print("\n", "="*5, "LOGIN SUCCESSFULL", "="*5, "\n")
+            print_command(5, "LOGIN successfull")
             break
         else:
-            print("\n", "="*5, "LOGIN FAILED", "="*5, "\n")
+            print_command(5, "Login FAiled")
 
     main()
 
@@ -55,7 +61,8 @@ def main():
             if response in temp:
                 break
             else:
-                print("\n", "="*5, "ENTER VALID OPTION", "="*5, "\n")
+                print_command(5, "ENTER VALID OPTION")
+
         except Exception:
             continue
 
@@ -74,7 +81,78 @@ def main():
 
 
 def AddCrimeRec():
+    query = "select RecNo from CrimeRecords"
+    mycursor.execute(query)
+    res = mycursor.fetchall()
+    RecNos = []
+    for i in res:
+        for j in i:
+            RecNos.append(str(j))
 
+    query = "select OffenceNo from OffenceType"
+    mycursor.execute(query)
+    res = mycursor.fetchall()
+    OffenceNos = []
+    for i in res:
+        for j in i:
+            OffenceNos.append(str(j))
+    print(OffenceNos)
+    print(RecNos)
+
+    while True:
+        NewRecNo = random.randint(1000, 9999)
+        if NewRecNo not in RecNos:
+            NewRecNo = NewRecNo
+            break
+        else:
+            continue
+
+    CurrentDate = str(datetime.now())[0:11]
+
+    while True:
+        NewOffenceNo = input("ENTER OFFENCE NUMBER: ")
+
+        if NewOffenceNo not in OffenceNos:
+            print_command(5, "OFFENCE NUMBER INVALID")
+        else:
+            NewOffenceNo = int(NewOffenceNo)
+            break
+    while True:
+        Complaint = input("COMPLAINT GIVEN BY: ")
+        if Complaint != "":
+            Complaint = Complaint.upper()
+            break
+        else:
+            print_command(5, "ENTER A NAME")
+    while True:
+        Address = input("ADDRESS OF {}: ".format(Complaint))
+        if Address != "":
+            Address = Address.upper()
+            break
+        else:
+            print_command(5, "ENTER A ADDRESS")
+    while True:
+        Phone = input("PHONE NUMBER OF {}: ".format(Complaint))
+        if Phone != "":
+            break
+        else:
+            print_command(5, "ENTER A PHONE NUMBER")
+
+    while True:
+        Status = input("STATUS (OPEN/CLOSED): ")
+        if Status.lower() in ["open", "closed"]:
+            Status = Status.upper()
+            break
+        else:
+            print_command(5, "ENTER A VALID STATUS (OPEN/CLOSED)")
+
+    LastUpdated = CurrentDate
+
+    Notes = input("NOTES: ")
+    query = "insert into CrimeRecords values({},'{}',{},'{}','{}','{}','{}','{}','{}')".format(
+        NewRecNo, CurrentDate, NewOffenceNo, Complaint, Address, Phone, Status, LastUpdated, Notes)
+    mycursor.execute(query)
+    mydb.commit()
     pass
 
 
@@ -104,5 +182,5 @@ def DataVisualization():
 
 
 if __name__ == "__main__":
-    print("="*20, "CRIME RECORD MANAGEMENT", "="*20, "\n")
-    main()
+    print_command(20, "CRIME RECORD MANAGEMent")
+    AddCrimeRec()
