@@ -81,6 +81,7 @@ def main():
 
 
 def AddCrimeRec():
+    print_command(10, "ADD CRIME RECORD")
     query = "select RecNo from CrimeRecords"
     mycursor.execute(query)
     res = mycursor.fetchall()
@@ -96,8 +97,6 @@ def AddCrimeRec():
     for i in res:
         for j in i:
             OffenceNos.append(str(j))
-    print(OffenceNos)
-    print(RecNos)
 
     while True:
         NewRecNo = random.randint(1000, 9999)
