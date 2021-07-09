@@ -33,7 +33,6 @@ def login():
                 temp.append(j)
             response.append(temp)
             temp = []
-        print(response)
 
         UserName = input("ENTER USERNAME: ")
         Password = input("ENTER PASSWORD: ")
@@ -43,8 +42,8 @@ def login():
             break
         else:
             print_command(5, "Login FAiled")
-
-    main()
+    while True:
+        main()
 
 
 def main():
@@ -70,18 +69,22 @@ def main():
         except Exception:
             continue
 
-    dic = {
-        1: AddCrimeRec(),
-        2: ModifyCrimeRec(),
-        3: ViewCrimeRec(),
-        4: AddOffenceType(),
-        5: ModifyOffenceType(),
-        6: ViewOffenceTypes(),
-        7: DataVisualization(),
-        8: sys.exit(),
-    }
-
-    dic[response]
+    if response == 1:
+        AddCrimeRec()
+    elif response == 2:
+        ModifyCrimeRec()
+    elif response == 3:
+        ViewCrimeRec()
+    elif response == 4:
+        AddOffenceType()
+    elif response == 5:
+        ModifyOffenceType()
+    elif response == 6:
+        ViewOffenceTypes()
+    elif response == 7:
+        DataVisualization()
+    elif response == 8:
+        sys.exit()
 
 
 def AddCrimeRec():
