@@ -319,4 +319,4 @@ def DataVisualization():
 
 if __name__ == "__main__":
     print_command(20, "CRIME RECORD MANAGEMent")
-    ViewCrimeRec()
+    login()
