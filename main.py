@@ -7,6 +7,8 @@ import sqlite3
 from datetime import datetime
 import random
 
+from pandas.core import accessor
+
 pd.options.mode.chained_assignment = None
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -114,8 +116,15 @@ def AddCrimeRec():
             continue
 
     CurrentDate = str(datetime.now())[0:10]
+    query = "select * from OffenceType"
+    mycursor.execute(query)
+    res = mycursor.fetchall()
+    df = pd.DataFrame(
+        res, columns=["Offence Number".upper(), "Offence Name".upper(), "IPC SECTION"])
 
+    print(df)
     while True:
+
         NewOffenceNo = input("ENTER OFFENCE NUMBER: ")
 
         if NewOffenceNo not in OffenceNos:
@@ -125,24 +134,58 @@ def AddCrimeRec():
             break
     while True:
         Complaint = input("COMPLAINT GIVEN BY: ")
-        if Complaint != "":
+        if Complaint.strip() != "":
+
             Complaint = Complaint.upper()
+            Complaint = Complaint.strip()
             break
         else:
             print_command(5, "ENTER A NAME")
     while True:
         Address = input("ADDRESS OF {}: ".format(Complaint))
+        Address = Address.strip()
         if Address != "":
-            Address = Address.upper()
             break
         else:
             print_command(5, "ENTER A ADDRESS")
     while True:
         Phone = input("PHONE NUMBER OF {}: ".format(Complaint))
+        Phone = Phone.strip()
         if Phone != "":
             break
         else:
             print_command(5, "ENTER A PHONE NUMBER")
+    while True:
+        AccuseName = input("Name of Accuse *If unknown press enter*: ")
+        AccuseName = AccuseName.strip()
+        if AccuseName != "":
+            while True:
+                AccuseNationality = input(
+                    "Nationality of {}".format(AccuseName))
+                AccuseNationality = AccuseNationality.strip()
+                if AccuseNationality != "":
+                    while True:
+                        AccuseDob = input("DOB of {}".format(AccuseName))
+                        AccuseDob = AccuseDob.strip()
+                        if AccuseDob != "":
+                            while True:
+                                AccuseAddress = input(
+                                    "Address of {}".format(AccuseName))
+                                AccuseAddress = AccuseAddress.strip()
+                                if AccuseAddress != "":
+                                    break
+                                else:
+                                    print_command(5, "ENTER VALID ADDRESS")
+                            break
+                        else:
+                            print_command(5, "Enter valid DOB")
+                    break
+                else:
+                    print_command(5, "Enter valid Nationality")
+            break
+        else:
+            AccuseName = AccuseDob = AccuseNationality = AccuseAddress = ""
+            break
 
     while True:
         Status = input("STATUS (OPEN/CLOSED): ")
@@ -155,8 +198,8 @@ def AddCrimeRec():
     LastUpdated = CurrentDate
 
     Notes = input("NOTES: ")
-    query = "insert into CrimeRecords values({},'{}',{},'{}','{}','{}','{}','{}','{}')".format(
-        NewRecNo, CurrentDate, NewOffenceNo, Complaint, Address, Phone, Status, LastUpdated, Notes)
+    query = "insert into CrimeRecords values({},'{}',{},'{}','{}','{}','{}','{}','{}','{}','{}','{}','{}')".format(
+        NewRecNo, CurrentDate, NewOffenceNo, Complaint, Address, AccuseName, AccuseNationality, AccuseDob, AccuseAddress, Phone, Status, LastUpdated, Notes)
     mycursor.execute(query)
     mydb.commit()
     pass
@@ -167,17 +210,98 @@ def ModifyCrimeRec():
 
 
 def ViewCrimeRec():
-    print_command(5, "VIEW CRIME RECORDS")
-    query = "select * from CrimeRecords"
+    print_command(10, "VIEW CRIME RECORDS")
+    print("OPTION 1: SEARCH MY RECORD NUMBER")
+    print("OPTION 2: SEARCH BY OFFENCE NUMBER")
+    while True:
+        res = input("ENTER OPTION NUMBER: ")
+        temp = [1, 2]
+        try:
+            res = int(res)
+            if res not in temp:
+                print_command(5, "Enter valid option")
+            else:
+                break
+        except Exception:
+            print_command(5, "Enter valid option")
+    query = "Select * from CrimeRecords"
     mycursor.execute(query)
-    res = mycursor.fetchall()
-    df = pd.DataFrame(res, columns=["RECORD NUMBER", "DATE", "OFFENCE NUMBER",
-                      "COMPLAINT", "ADDRESS", "PHONE NUMBER", "STATUS", "LAST UPDATED", "NOTES"])
-    print(df)
+    data = mycursor.fetchall()
+
+    df = pd.DataFrame(data, columns=["Record Number", "Date", "Offence", "Complaint", "Address", "Phone Number",
+                                     "Accuse Name", "Accuse Nationality", "Accuse DOB", "Accuse Address", "Status", "Last Updated", "NOTES"])
+
+    query = "select OffenceNo,OffenceName from OffenceType"
+    mycursor.execute(query)
+    data = mycursor.fetchall()
+    old = []
+    new = []
+    for i in data:
+        for j in range(len(i)):
+            if j == 0:
+                old.append(i[j])
+            else:
+                new.append(i[j])
+
+    df["Offence"] = df["Offence"].replace(old, new)
+
+    def SearchByRecNo():
+        print_command(8, "Search by record number")
+        while True:
+            RecNo = input("Record Number: ")
+            try:
+                RecNo = int(RecNo)
+                break
+            except Exception:
+                print_command(5, "ENTER VALID RECORD NUMBER")
+
+        results = df[df["Record Number"] == RecNo]
+        if results.empty:
+            print_command(
+                5, "NO CRIMINAL RECORD ASSOCIATED WITH RECORD NUMBER {}".format(RecNo))
+        else:
+            print_command(5, "CRIMINAL RECORD FOUND")
+            print(results)
+
+    def SearchByOffenceNumber(old, new, Data):
+        dic = {}
+        for i in range(len(old)):
+            dic[old[i]] = new[i]
+        print_command(8, "SEARCH BY OFFENCE NUMBER")
+        query = "select * from OffenceType"
+        mycursor.execute(query)
+        res = mycursor.fetchall()
+        df = pd.DataFrame(
+            res, columns=["Offence Number".upper(), "Offence Name".upper(), "IPC SECTION"])
+        print(df)
+        OffenceNos = df["OFFENCE NUMBER"].values
+        while True:
+            OffenceNo = input("OFFENCE NUMBER: ")
+            try:
+                OffenceNo = int(OffenceNo)
+                if OffenceNo in OffenceNos:
+                    break
+                else:
+                    print_command(5, "ENTER VALID OFFENCE NUMBER")
+            except Exception:
+                print_command(5, "ENTER VALID OFFENCE NUMBER")
+        ToSearch = dic[OffenceNo]
+        print(ToSearch)
+        result = Data[Data["Offence"] == ToSearch]
+        if result.empty:
+            print_command(
+                5, "NO CRIMINAL RECORDS ASSOCIATED WITH {} IS FOUND".format(ToSearch))
+        else:
+            print_command(5, "{} CRIMINAL RECORDS FOUND".format(len(result)))
+            print(result)
+
+    if res == 1:
+        SearchByRecNo()
+    elif res == 2:
+        SearchByOffenceNumber(old, new, df)
 
 
 def AddOffenceType():
-
     pass
 
 
@@ -195,4 +319,4 @@ def DataVisualization():
 
 if __name__ == "__main__":
     print_command(20, "CRIME RECORD MANAGEMent")
-    login()
+    ViewCrimeRec()
