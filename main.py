@@ -56,7 +56,7 @@ def main():
     print("OPTION 4: ADD OFFENCE TYPE")
     print("OPTION 5: MODIFY OFFENCE TYPE")
     print("OPTION 6: VIEW OFFENCE TYPES")
-    print("OPTION 7: DATA VISUALIZATION")
+    print("OPTION 7: VISUAL ANALYSIS")
     print("OPTION 8: CLOSE APPLICATION")
     temp = [1, 2, 3, 4, 5, 6, 7, 8]
     while True:
